@@ -15,6 +15,6 @@ async fn main() -> eyre::Result<()> {
         authorization: Authorization::None,
     };
     let serve = |_, _| async move { Ok(serve_metrics(&channels.clone()).await) };
-    render_prometheus(server_options, (), serve).await;
+    tokio::spawn(render_prometheus(server_options, (), serve)).await?;
     Ok(())
 }
