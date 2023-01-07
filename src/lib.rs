@@ -1,5 +1,5 @@
 use futures::stream::{FuturesOrdered, StreamExt};
-use wasd::ChannelStats;
+use wasd::Stats;
 
 pub mod config;
 pub mod metrics;
@@ -8,7 +8,7 @@ pub mod wasd;
 pub async fn serve_metrics(channels: &[String]) -> String {
     let wasd_results = FuturesOrdered::from_iter(channels.into_iter().map(|x| wasd::get_stats(x)));
 
-    let stats: Vec<Option<ChannelStats>> = wasd_results
+    let stats: Vec<Option<Stats>> = wasd_results
         .map(|x| match x {
             Ok(x) => Some(x),
             Err(e) => {
@@ -18,7 +18,7 @@ pub async fn serve_metrics(channels: &[String]) -> String {
         })
         .collect()
         .await;
-    let stats: Vec<ChannelStats> = stats
+    let stats: Vec<Stats> = stats
         .into_iter()
         .filter(|x| x.is_some())
         .map(|x| x.expect("impossible unfiltered None"))
@@ -35,6 +35,6 @@ mod tests {
         let metrics =
             serve_metrics(&["Dawgos".into(), "Alison".into(), "nonexistent".into()]).await;
         println!("{metrics}");
-        assert_eq!(metrics.lines().count(), 24)
+        assert_eq!(metrics.lines().count(), 36)
     }
 }
